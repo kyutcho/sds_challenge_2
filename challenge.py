@@ -139,3 +139,9 @@ box_plot_viz("drivetrain")
 for i in range(10):
     var = "feature_" + str(i)
     cat_analysis(var)
+
+# odometer_value
+plt.figure(figsize = (10, 5))
+sns.distplot(cars["odometer_value"], color = "green")
+
+sns.relplot(data = cars, x = "odometer_value", y = "price_usd", size = 10, legend = False)
