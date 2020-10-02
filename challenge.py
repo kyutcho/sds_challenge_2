@@ -22,6 +22,9 @@ cars = pd.read_csv(win_path)
 # columns
 cars.columns
 
+# high-level info
+cars.info()
+
 cars.head()
 
 # shape
@@ -30,16 +33,33 @@ cars.shape
 # column with missing values
 cars.isnull().sum()[cars.isnull().sum() != 0]
 
+# price var
+cars["price_usd"].describe()
+sns.distplot(cars["price_usd"])
+print(f'skewnewss: {cars["price_usd"].skew()}')
+print(f'kurtosis: {cars["price_usd"].kurt()}')
+
+# log(price)
+cars["log_price_usd"] = np.log10(cars["price_usd"])
+sns.distplot(cars["log_price_usd"])
+print(f'skewnewss: {cars["log_price_usd"].skew()}')
+print(f'kurtosis: {cars["log_price_usd"].kurt()}')
+
 # categorical variable univariate analysis function
 def cat_analysis(col):
     val_count = cars[col].value_counts()
+    val_count = val_count.rename("count")
     val_pct = round(cars[col].value_counts(normalize = True), 2)
+    val_pct = val_pct.rename("pct")
     val_combined = pd.concat([val_count, val_pct], axis = 1)
     
     if len(val_combined) > 20:
         print(val_combined.head(20))
     else:
         print(val_combined)
+     
+# number of unique values for categorical vars        
+cars.select_dtypes("object").apply(pd.Series.nunique, axis = 0)
 
 # manufacturer_name
 cat_analysis("manufacturer_name")
@@ -58,6 +78,18 @@ cat_analysis("engine_fuel")
 
 # engine_has_gas
 cat_analysis("engine_has_gas")
+
+# engine_type
+cat_analysis("engine_type")
+
+# body_type
+cat_analysis("body_type")
+
+# has_warranty
+cat_analysis("has_warranty")
+
+# state
+cat_analysis("state")
 
 # drivetrain
 cat_analysis("drivetrain")
