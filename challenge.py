@@ -57,42 +57,83 @@ def cat_analysis(col):
         print(val_combined.head(20))
     else:
         print(val_combined)
-     
+
+def box_plot_viz(col):
+    idx = cars.groupby(col)\
+              .agg({"price_usd":"median"})\
+              .sort_values("price_usd", ascending = False).index
+    plt.figure(figsize = (12, 6))
+    sns.boxplot(data = cars, \
+            x = col, \
+            y = "price_usd",
+            order = idx)
+    if len(cars[col].unique()) > 20:
+        plt.xticks(rotation = 90)
+
 # number of unique values for categorical vars        
 cars.select_dtypes("object").apply(pd.Series.nunique, axis = 0)
 
 # manufacturer_name
 cat_analysis("manufacturer_name")
 
+box_plot_viz("manufacturer_name")
+
+
 # model_name
 cat_analysis("model_name")
+
 
 # transmission
 cat_analysis("transmission")
 
+box_plot_viz("transmission")
+
+
 # color
 cat_analysis("color")
+
+box_plot_viz("color")
+
 
 # engine_fuel
 cat_analysis("engine_fuel")
 
+box_plot_viz("engine_fuel")
+
+
 # engine_has_gas
 cat_analysis("engine_has_gas")
+
+box_plot_viz("engine_has_gas")
+
 
 # engine_type
 cat_analysis("engine_type")
 
+box_plot_viz("engine_type")
+
 # body_type
 cat_analysis("body_type")
+
+box_plot_viz("body_type")
+
 
 # has_warranty
 cat_analysis("has_warranty")
 
+box_plot_viz("has_warranty")
+
+
 # state
 cat_analysis("state")
 
+box_plot_viz("state")
+
 # drivetrain
 cat_analysis("drivetrain")
+
+box_plot_viz("drivetrain")
+
 
 # features
 for i in range(10):
