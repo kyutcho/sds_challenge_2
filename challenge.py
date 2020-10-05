@@ -40,7 +40,7 @@ print(f'skewnewss: {cars["price_usd"].skew()}')
 print(f'kurtosis: {cars["price_usd"].kurt()}')
 
 # log(price)
-cars["log_price_usd"] = np.log10(cars["price_usd"])
+cars["log_price_usd"] = np.log(cars["price_usd"])
 sns.distplot(cars["log_price_usd"])
 print(f'skewnewss: {cars["log_price_usd"].skew()}')
 print(f'kurtosis: {cars["log_price_usd"].kurt()}')
@@ -144,4 +144,29 @@ for i in range(10):
 plt.figure(figsize = (10, 5))
 sns.distplot(cars["odometer_value"], color = "green")
 
-sns.relplot(data = cars, x = "odometer_value", y = "price_usd", size = 10, legend = False)
+sns.relplot(data = cars, x = "odometer_value", 
+            y = "price_usd", size = 10, legend = False)
+
+# year_produced
+cars["year_produced"].value_counts()
+round(cars["year_produced"].value_counts(normalize = True) * 100, 2)
+
+cars["year_produced"].plot(kind = "hist", x = "year_produced", bins = 20)
+
+# duration_listed
+sns.distplot(cars["duration_listed"])
+
+ax = sns.regplot(x = "duration_listed", y = "price_usd", data = cars)
+ax.set_yscale("log")
+ax.set_xscale("log")
+
+# engine_capacity
+cars["engine_capacity"].value_counts()
+cars["engine_capacity"].hist(bins = 30)
+
+# correlation
+num_vars = ["price_usd", "odometer_value", "year_produced", "engine_capacity", "duration_listed"]
+corr = cars[num_vars].corr()
+
+plt.figure(figsize = (10, 5))
+sns.heatmap(corr, annot=True, cmap = "YlOrRd")
