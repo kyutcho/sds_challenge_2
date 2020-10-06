@@ -45,6 +45,11 @@ sns.distplot(cars["log_price_usd"])
 print(f'skewnewss: {cars["log_price_usd"].skew()}')
 print(f'kurtosis: {cars["log_price_usd"].kurt()}')
 
+def calc_IQR(col):
+    return col.quantile(0.75) - col.quantile(0.25)
+
+
+
 # categorical variable univariate analysis function
 def cat_analysis(col):
     val_count = cars[col].value_counts()
@@ -52,7 +57,7 @@ def cat_analysis(col):
     val_pct = round(cars[col].value_counts(normalize = True), 2)
     val_pct = val_pct.rename("pct")
     
-    var_desc = cars.groupby(col)["price_usd"].agg(["mean", "median", "std"])
+    var_desc = cars.groupby(col)["price_usd"].agg(["mean", "median", "std", calc_IQR])
     
     val_combined = pd.concat([val_count, val_pct, var_desc], axis = 1)
     
