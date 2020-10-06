@@ -48,100 +48,80 @@ print(f'kurtosis: {cars["log_price_usd"].kurt()}')
 def calc_IQR(col):
     return col.quantile(0.75) - col.quantile(0.25)
 
-
+def num_outlier(col, df = "cars"):
+    IQR = calc_IQR(col)
+    
+    return df[col >= (col.quantile(0.75) + 1.5*IQR) |\
+              col <= (col.quantile(0.25) - 1.5*IQR)]
 
 # categorical variable univariate analysis function
-def cat_analysis(col):
-    val_count = cars[col].value_counts()
-    val_count = val_count.rename("count")
-    val_pct = round(cars[col].value_counts(normalize = True), 2)
-    val_pct = val_pct.rename("pct")
-    
-    var_desc = cars.groupby(col)["price_usd"].agg(["mean", "median", "std", calc_IQR])
-    
-    val_combined = pd.concat([val_count, val_pct, var_desc], axis = 1)
-    
-    if len(val_combined) > 20:
-        print(val_combined.head(20))
+def cat_analysis(col, sortedBy = "count"):
+    col_count = cars[col].value_counts()
+    col_desc = cars.groupby(col)["price_usd"]\
+                   .agg(["mean", "median", "std", calc_IQR])
+                                          
+    if sortedBy == "count":
+        idx = col_count.index
     else:
-        print(val_combined)
-
-def box_plot_viz(col):
-    idx = cars.groupby(col)\
-              .agg({"price_usd":"median"})\
-              .sort_values("price_usd", ascending = False).index
+        idx = col_desc.sort_values(by = sortedBy, ascending = False).index
+    
+    col_count = col_count.reindex(idx)
+    col_desc = col_desc.reindex(idx)
+    
+    col_combined = pd.concat([col_count, col_desc], axis = 1)
+    
     plt.figure(figsize = (12, 6))
-    sns.boxplot(data = cars, \
+    
+    if len(col_combined) > 20:
+        sns.boxplot(data = cars[cars[col].isin(list(idx[:20]))], \
+            x = col, \
+            y = "price_usd",
+            order = idx[:20])
+        plt.xticks(rotation = 90)
+        print(col_combined.head(20))
+    else:
+        sns.boxplot(data = cars, \
             x = col, \
             y = "price_usd",
             order = idx)
-    if len(cars[col].unique()) > 20:
-        plt.xticks(rotation = 90)
+        print(col_combined)
+        
 
 # number of unique values for categorical vars        
 cars.select_dtypes("object").apply(pd.Series.nunique, axis = 0)
 
 # manufacturer_name
-cat_analysis("manufacturer_name")
-
-box_plot_viz("manufacturer_name")
-
+cat_analysis("manufacturer_name", "median")
 
 # model_name
 cat_analysis("model_name")
 
-
 # transmission
 cat_analysis("transmission")
-
-box_plot_viz("transmission")
-
 
 # color
 cat_analysis("color")
 
-box_plot_viz("color")
-
-
 # engine_fuel
 cat_analysis("engine_fuel")
-
-box_plot_viz("engine_fuel")
-
 
 # engine_has_gas
 cat_analysis("engine_has_gas")
 
-box_plot_viz("engine_has_gas")
-
-
 # engine_type
 cat_analysis("engine_type")
 
-box_plot_viz("engine_type")
-
 # body_type
-cat_analysis("body_type")
-
-box_plot_viz("body_type")
-
+cat_analysis("body_type", "median")
 
 # has_warranty
-cat_analysis("has_warranty")
-
-box_plot_viz("has_warranty")
-
+cat_analysis("has_warranty", "median")
 
 # state
 cat_analysis("state")
 
-box_plot_viz("state")
-
 # drivetrain
 cat_analysis("drivetrain")
-
-box_plot_viz("drivetrain")
-
 
 # features
 for i in range(10):
