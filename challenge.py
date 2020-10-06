@@ -51,7 +51,10 @@ def cat_analysis(col):
     val_count = val_count.rename("count")
     val_pct = round(cars[col].value_counts(normalize = True), 2)
     val_pct = val_pct.rename("pct")
-    val_combined = pd.concat([val_count, val_pct], axis = 1)
+    
+    var_desc = cars.groupby(col)["price_usd"].agg(["mean", "median", "std"])
+    
+    val_combined = pd.concat([val_count, val_pct, var_desc], axis = 1)
     
     if len(val_combined) > 20:
         print(val_combined.head(20))
