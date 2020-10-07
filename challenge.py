@@ -16,8 +16,9 @@ plt.style.use("ggplot")
 # file_path = "\challenge_1"
 win_path = "D:/Learning/Projects/sds_challenges_2/challenge_2/data/public_cars.csv"
 mac_path = "~/Projects/sds_challenge_2/challenge_2/data/public_cars.csv"
+data_path = "challenge_2/data/public_cars.csv"
 
-cars = pd.read_csv(mac_path)
+cars = pd.read_csv(data_path)
 
 # columns
 cars.columns
