@@ -55,9 +55,9 @@ def num_outlier(col, df = "cars"):
               col <= (col.quantile(0.25) - 1.5*IQR)]
 
 # categorical variable univariate analysis function
-def cat_analysis(col, sortedBy = "count"):
-    col_count = cars[col].value_counts()
-    col_desc = cars.groupby(col)["price_usd"]\
+def cat_analysis(col_x, col_y = "price_usd", sortedBy = "count"):
+    col_count = cars[col_x].value_counts()
+    col_desc = cars.groupby(col_x)[col_y]\
                    .agg(["mean", "median", "std", calc_IQR])
                                           
     if sortedBy == "count":
@@ -69,21 +69,21 @@ def cat_analysis(col, sortedBy = "count"):
     col_desc = col_desc.reindex(idx)
     
     col_combined = pd.concat([col_count, col_desc], axis = 1)
-    col_combined.rename(columns = {col: "total"}, inplace = True)
+    col_combined.rename(columns = {col_x: "total"}, inplace = True)
     
     plt.figure(figsize = (12, 6))
     
     if len(col_combined) > 20:
-        sns.boxplot(data = cars[cars[col].isin(list(idx[:20]))], \
-            x = col, \
-            y = "price_usd",
+        sns.boxplot(data = cars[cars[col_x].isin(list(idx[:20]))], \
+            x = col_x, \
+            y = col_y,
             order = idx[:20])
         plt.xticks(rotation = 90)
         print(col_combined.head(20))
     else:
         sns.boxplot(data = cars, \
-            x = col, \
-            y = "price_usd",
+            x = col_x, \
+            y = col_y,
             order = idx)
         print(col_combined)
         
@@ -162,3 +162,9 @@ sns.heatmap(corr, annot=True, cmap = "YlOrRd")
 
 # Pairplot
 sns.pairplot(cars[num_vars])
+
+# Handling missing data
+cars["engine_capacity"].describe()
+cars.loc[cars["engine_capacity"].isnull(), ["engine_has_gas", "engine_fuel", "engine_capacity"]]
+
+# All missing values are electric cars which does not have engine capacity
