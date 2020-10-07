@@ -15,9 +15,9 @@ plt.style.use("ggplot")
 
 # file_path = "\challenge_1"
 win_path = "D:/Learning/Projects/sds_challenges_2/challenge_2/data/public_cars.csv"
-mac_path = "~/Projects/sds_challenge_2/challenge_1/data/public_flights.csv"
+mac_path = "~/Projects/sds_challenge_2/challenge_2/data/public_cars.csv"
 
-cars = pd.read_csv(win_path)
+cars = pd.read_csv(mac_path)
 
 # columns
 cars.columns
@@ -69,6 +69,7 @@ def cat_analysis(col, sortedBy = "count"):
     col_desc = col_desc.reindex(idx)
     
     col_combined = pd.concat([col_count, col_desc], axis = 1)
+    col_combined.rename(columns = {col: "total"}, inplace = True)
     
     plt.figure(figsize = (12, 6))
     
@@ -158,3 +159,6 @@ corr = cars[num_vars].corr()
 
 plt.figure(figsize = (10, 5))
 sns.heatmap(corr, annot=True, cmap = "YlOrRd")
+
+# Pairplot
+sns.pairplot(cars[num_vars])
