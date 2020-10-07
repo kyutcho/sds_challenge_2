@@ -169,3 +169,4 @@ cars["engine_capacity"].describe()
 cars.loc[cars["engine_capacity"].isnull(), ["engine_has_gas", "engine_fuel", "engine_capacity"]]
 
 # All missing values are electric cars which does not have engine capacity
+cars["engine_capacity"].fillna(0, inplace = True)
