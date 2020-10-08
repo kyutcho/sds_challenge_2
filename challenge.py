@@ -183,5 +183,8 @@ for col in cars.columns.to_list():
             cars[col] = lbl_enc.fit_transform(cars[col])
             print("Column {} is label encoded!".format(col))
             
+# Drop model names column
+cars.drop("model_name", axis = 1)
 
-    
+# Make dummy variable
+cars = pd.get_dummies(cars)
