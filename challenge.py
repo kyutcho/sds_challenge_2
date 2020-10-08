@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
 from scipy.stats import norm, skew
 
 plt.style.use("ggplot")
@@ -93,10 +94,12 @@ def cat_analysis(col_x, col_y = "price_usd", sortedBy = "count"):
 cars.select_dtypes("object").apply(pd.Series.nunique, axis = 0)
 
 # manufacturer_name
-cat_analysis("manufacturer_name", "median")
+cat_analysis("manufacturer_name")
+cars["manufacturer_name"].value_counts().sort_values().head(10)
 
 # model_name
 cat_analysis("model_name")
+(cars["model_name"].value_counts() < 5).mean()
 
 # transmission
 cat_analysis("transmission")
@@ -170,3 +173,15 @@ cars.loc[cars["engine_capacity"].isnull(), ["engine_has_gas", "engine_fuel", "en
 
 # All missing values are electric cars which does not have engine capacity
 cars["engine_capacity"].fillna(0, inplace = True)
+
+# Generate label encoded columns for columns with 2 unique values
+lbl_enc = LabelEncoder()
+
+for col in cars.columns.to_list():
+    if (cars[col].dtype == "object" or cars[col].dtype == "bool"):
+        if len(list(cars[col].unique())) == 2:
+            cars[col] = lbl_enc.fit_transform(cars[col])
+            print("Column {} is label encoded!".format(col))
+            
+
+    
