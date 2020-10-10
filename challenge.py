@@ -57,11 +57,13 @@ print_skew_kurt(np.sqrt(cars["price_usd"]))
 def calc_IQR(col):
     return col.quantile(0.75) - col.quantile(0.25)
 
-def num_outlier(col, df = "cars"):
-    IQR = calc_IQR(col)
+def num_outlier(col):
+    IQR = calc_IQR(cars[col])
     
-    return df[col >= (col.quantile(0.75) + 1.5*IQR) |\
-              col <= (col.quantile(0.25) - 1.5*IQR)]
+    return cars[cars[col] >= (cars[col].quantile(0.75) + 1.5*IQR)].sum()+\
+           cars[cars[col] <= (cars[col].quantile(0.25) - 1.5*IQR)].sum()
+        
+# cars[cars[]]
 
 # categorical variable univariate analysis function
 def cat_analysis(col_x, col_y = "price_usd", sorted_by = "count"):
