@@ -219,4 +219,4 @@ for col in cars.columns.to_list():
 # cars.drop("model_name", axis = 1, inplace = True)
 
 # Make dummy variable
-cars = pd.get_dummies(cars)
+cars = pd.get_dummies(cars, drop_first = True)
