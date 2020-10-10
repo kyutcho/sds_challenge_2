@@ -9,7 +9,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import math
 from sklearn.preprocessing import LabelEncoder
+from scipy.special import boxcox1p
 from scipy.stats import norm, skew
 
 plt.style.use("ggplot")
@@ -35,17 +37,22 @@ cars.shape
 # column with missing values
 cars.isnull().sum()[cars.isnull().sum() != 0]
 
+def print_skew_kurt(col):
+    print(f'skewnewss: {col.skew()}')
+    print(f'kurtosis: {col.kurt()}')
+
 # price var
 cars["price_usd"].describe()
 sns.distplot(cars["price_usd"])
-print(f'skewnewss: {cars["price_usd"].skew()}')
-print(f'kurtosis: {cars["price_usd"].kurt()}')
+print_skew_kurt(cars["price_usd"])
 
 # log(price)
-cars["log_price_usd"] = np.log(cars["price_usd"])
-sns.distplot(cars["log_price_usd"])
-print(f'skewnewss: {cars["log_price_usd"].skew()}')
-print(f'kurtosis: {cars["log_price_usd"].kurt()}')
+sns.distplot(np.log(cars["price_usd"]))
+print_skew_kurt(np.log(cars["price_usd"]))             
+
+# sqrt(price)
+sns.distplot(np.sqrt(cars["price_usd"]))
+print_skew_kurt(np.sqrt(cars["price_usd"]))
 
 def calc_IQR(col):
     return col.quantile(0.75) - col.quantile(0.25)
@@ -57,15 +64,14 @@ def num_outlier(col, df = "cars"):
               col <= (col.quantile(0.25) - 1.5*IQR)]
 
 # categorical variable univariate analysis function
-def cat_analysis(col_x, col_y = "price_usd", sortedBy = "count"):
+def cat_analysis(col_x, col_y = "price_usd", sorted_by = "count"):
     col_count = cars[col_x].value_counts()
-    col_desc = cars.groupby(col_x)[col_y]\
-                   .agg(["mean", "median", "std", calc_IQR])
-                                          
-    if sortedBy == "count":
+    col_desc = cars.groupby(col_x)[col_y].agg(["mean", "median", "std", calc_IQR])
+    
+    if sorted_by == "count":
         idx = col_count.index
     else:
-        idx = col_desc.sort_values(by = sortedBy, ascending = False).index
+        idx = col_desc.sort_values(by = sorted_by, ascending = False).index
     
     col_count = col_count.reindex(idx)
     col_desc = col_desc.reindex(idx)
@@ -88,7 +94,6 @@ def cat_analysis(col_x, col_y = "price_usd", sortedBy = "count"):
             y = col_y,
             order = idx)
         print(col_combined)
-        
 
 # number of unique values for categorical vars        
 cars.select_dtypes("object").apply(pd.Series.nunique, axis = 0)
@@ -117,7 +122,7 @@ cat_analysis("engine_has_gas")
 cat_analysis("engine_type")
 
 # body_type
-cat_analysis("body_type", "median")
+cat_analysis("body_type")
 
 # has_warranty
 cat_analysis("has_warranty", "median")
@@ -132,6 +137,17 @@ cat_analysis("drivetrain")
 for i in range(10):
     var = "feature_" + str(i)
     cat_analysis(var)
+    
+# pivot table
+pd.pivot_table(cars, values = "price_usd", 
+               index = "manufacturer_name", columns = "body_type",
+               aggfunc="mean", fill_value=0)
+
+# engine_fuel vs engine_type
+pd.crosstab(index = cars["engine_fuel"], columns = cars["engine_type"])
+
+# gas type replaced by gasoline
+cars["engine_fuel"] = np.where(cars["engine_fuel"] == "gas", "gasoline", cars["engine_fuel"])
 
 # odometer_value
 plt.figure(figsize = (10, 5))
@@ -143,12 +159,22 @@ sns.relplot(data = cars, x = "odometer_value",
 # year_produced
 cars["year_produced"].value_counts()
 round(cars["year_produced"].value_counts(normalize = True) * 100, 2)
+sns.distplot(cars["year_produced"])
 
 cars["year_produced"].plot(kind = "hist", x = "year_produced", bins = 20)
 
 # duration_listed
 sns.distplot(cars["duration_listed"])
+print_skew_kurt(cars["duration_listed"])
 
+# log(duration_listed)
+sns.distplot(np.log(cars["duration_listed"]))
+print_skew_kurt(np.log(cars["duration_listed"]))
+
+for lam in np.arange(-2, 2.5, 0.5):
+    bc_trans = boxcox1p(cars["duration_listed"], lam)
+    print("skewness:{} when lambda {}".format(bc_trans.skew(), lam))
+    
 ax = sns.regplot(x = "duration_listed", y = "price_usd", data = cars)
 ax.set_yscale("log")
 ax.set_xscale("log")
@@ -156,6 +182,12 @@ ax.set_xscale("log")
 # engine_capacity
 cars["engine_capacity"].value_counts()
 cars["engine_capacity"].hist(bins = 30)
+
+sns.distplot(np.log(cars["engine_capacity"]))
+sns.distplot(boxcox1p(cars["engine_capacity"], 0))
+
+print_skew_kurt(np.log(cars["engine_capacity"]))
+print_skew_kurt(boxcox1p(cars["engine_capacity"], 0))
 
 # correlation
 num_vars = ["price_usd", "odometer_value", "year_produced", "engine_capacity", "duration_listed"]
@@ -184,7 +216,7 @@ for col in cars.columns.to_list():
             print("Column {} is label encoded!".format(col))
             
 # Drop model names column
-cars.drop("model_name", axis = 1)
+# cars.drop("model_name", axis = 1, inplace = True)
 
 # Make dummy variable
 cars = pd.get_dummies(cars)
