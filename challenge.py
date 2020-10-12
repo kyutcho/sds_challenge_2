@@ -14,6 +14,9 @@ from sklearn.preprocessing import LabelEncoder
 from scipy.special import boxcox1p
 from scipy.stats import norm, skew
 
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import SGDRegressor
+
 plt.style.use("ggplot")
 
 # file_path = "\challenge_1"
@@ -62,8 +65,6 @@ def num_outlier(col):
     
     return cars[cars[col] >= (cars[col].quantile(0.75) + 1.5*IQR)].sum()+\
            cars[cars[col] <= (cars[col].quantile(0.25) - 1.5*IQR)].sum()
-        
-# cars[cars[]]
 
 # categorical variable univariate analysis function
 def cat_analysis(col_x, col_y = "price_usd", sorted_by = "count"):
@@ -151,6 +152,12 @@ pd.crosstab(index = cars["engine_fuel"], columns = cars["engine_type"])
 # gas type replaced by gasoline
 cars["engine_fuel"] = np.where(cars["engine_fuel"] == "gas", "gasoline", cars["engine_fuel"])
 
+# Confirm changes gas -> gasoline
+pd.crosstab(index = cars["engine_fuel"], columns = cars["engine_type"])
+
+# Drop engine_type
+cars.drop("engine_type", axis = 1, inplace=True)
+
 # odometer_value
 plt.figure(figsize = (10, 5))
 sns.distplot(cars["odometer_value"], color = "green")
@@ -170,26 +177,26 @@ sns.distplot(cars["duration_listed"])
 print_skew_kurt(cars["duration_listed"])
 
 # log(duration_listed)
-sns.distplot(np.log(cars["duration_listed"]))
-print_skew_kurt(np.log(cars["duration_listed"]))
+# sns.distplot(np.log(cars["duration_listed"]))
+# print_skew_kurt(np.log(cars["duration_listed"]))
 
-for lam in np.arange(-2, 2.5, 0.5):
-    bc_trans = boxcox1p(cars["duration_listed"], lam)
-    print("skewness:{} when lambda {}".format(bc_trans.skew(), lam))
+# for lam in np.arange(-2, 2.5, 0.5):
+#     bc_trans = boxcox1p(cars["duration_listed"], lam)
+#     print("skewness:{} when lambda {}".format(bc_trans.skew(), lam))
     
-ax = sns.regplot(x = "duration_listed", y = "price_usd", data = cars)
-ax.set_yscale("log")
-ax.set_xscale("log")
+# ax = sns.regplot(x = "duration_listed", y = "price_usd", data = cars)
+# ax.set_yscale("log")
+# ax.set_xscale("log")
 
 # engine_capacity
 cars["engine_capacity"].value_counts()
 cars["engine_capacity"].hist(bins = 30)
 
-sns.distplot(np.log(cars["engine_capacity"]))
-sns.distplot(boxcox1p(cars["engine_capacity"], 0))
+# sns.distplot(np.log(cars["engine_capacity"]))
+# sns.distplot(boxcox1p(cars["engine_capacity"], 0))
 
-print_skew_kurt(np.log(cars["engine_capacity"]))
-print_skew_kurt(boxcox1p(cars["engine_capacity"], 0))
+# print_skew_kurt(np.log(cars["engine_capacity"]))
+# print_skew_kurt(boxcox1p(cars["engine_capacity"], 0))
 
 # correlation
 num_vars = ["price_usd", "odometer_value", "year_produced", "engine_capacity", "duration_listed"]
@@ -218,7 +225,14 @@ for col in cars.columns.to_list():
             print("Column {} is label encoded!".format(col))
             
 # Drop model names column
-# cars.drop("model_name", axis = 1, inplace = True)
+cars.drop("model_name", axis = 1, inplace = True)
 
 # Make dummy variable
 cars = pd.get_dummies(cars, drop_first = True)
+
+# Make X, y
+X = cars.drop("price_usd", axis = 1)
+y = cars["price_usd"]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 1)
+
