@@ -15,6 +15,7 @@ from scipy.special import boxcox1p
 from scipy.stats import norm, skew
 
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import SGDRegressor
 
 plt.style.use("ggplot")
@@ -235,4 +236,28 @@ X = cars.drop("price_usd", axis = 1)
 y = cars["price_usd"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 1)
+
+# Linear Regression
+linearM = LinearRegression()
+
+# Fit linear regression model
+linearM.fit(X_train, y_train)
+
+# Prediction for test
+linearM.score(X_test, y_test)
+
+# Predicted price for price_usd using linear model
+y_pred = linearM.predict(X_test)
+
+# visualization: actual vs pred
+df = pd.DataFrame({"actual":y_test, 
+                   "pred":y_pred})
+
+plt.figure(figsize = (10, 5))
+sns.regplot(data = df, x = "actual", y = "pred")
+
+plt.title("Car price in USD actual vs predicted")
+plt.gca().spines["top"].set_color(None)
+plt.gca().spines["right"].set_color(None)
+plt.legend(loc = "best", fontsize = 10)
 
