@@ -18,6 +18,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import SGDRegressor
 
+from sklearn.metrics import mean_squared_error
+
 plt.style.use("ggplot")
 
 # file_path = "\challenge_1"
@@ -228,12 +230,14 @@ for col in cars.columns.to_list():
 # Drop model names column
 cars.drop("model_name", axis = 1, inplace = True)
 
+cars_no_trans = cars.copy()
+
 # Make dummy variable
-cars = pd.get_dummies(cars, drop_first = True)
+cars_no_trans = pd.get_dummies(cars, drop_first = True)
 
 # Make X, y
-X = cars.drop("price_usd", axis = 1)
-y = cars["price_usd"]
+X = cars_no_trans.drop("price_usd", axis = 1)
+y = cars_no_trans["price_usd"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 1)
 
@@ -249,6 +253,10 @@ linearM.score(X_test, y_test)
 # Predicted price for price_usd using linear model
 y_pred = linearM.predict(X_test)
 
+# MSE for linear model
+linear_mse = mean_squared_error(y_test, y_pred)
+np.sqrt(linear_mse)
+
 # visualization: actual vs pred
 df = pd.DataFrame({"actual":y_test, 
                    "pred":y_pred})
@@ -260,4 +268,3 @@ plt.title("Car price in USD actual vs predicted")
 plt.gca().spines["top"].set_color(None)
 plt.gca().spines["right"].set_color(None)
 plt.legend(loc = "best", fontsize = 10)
-
