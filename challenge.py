@@ -60,19 +60,30 @@ print_skew_kurt(np.log(cars["price_usd"]))
 sns.distplot(np.sqrt(cars["price_usd"]))
 print_skew_kurt(np.sqrt(cars["price_usd"]))
 
+cars[cars["year_produced"] >= 1996]["color"].count()
+
 def calc_IQR(col):
     return col.quantile(0.75) - col.quantile(0.25)
 
 def num_outlier(col):
     IQR = calc_IQR(cars[col])
     
-    return cars[cars[col] >= (cars[col].quantile(0.75) + 1.5*IQR)].sum()+\
-           cars[cars[col] <= (cars[col].quantile(0.25) - 1.5*IQR)].sum()
+    third_qt = cars[col].quantile(0.75)
+    first_qt = cars[col].quantile(0.25)
+    
+    outliers = cars[(cars[col] <= (first_qt - 1.5*IQR)) | 
+                    (cars[col] >= (third_qt + 1.5*IQR))]
+    
+    n_outliers = outliers.count()
+    
+    return n_outliers
 
 # categorical variable univariate analysis function
 def cat_analysis(col_x, col_y = "price_usd", sorted_by = "count"):
     col_count = cars[col_x].value_counts()
-    col_desc = cars.groupby(col_x)[col_y].agg(["mean", "median", "std", calc_IQR])
+    col_desc = cars.groupby(col_x)[col_y].agg(["mean", "median", "std", num_outlier])
+    
+    print(col_desc)
     
     if sorted_by == "count":
         idx = col_count.index
