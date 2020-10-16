@@ -60,8 +60,6 @@ print_skew_kurt(np.log(cars["price_usd"]))
 sns.distplot(np.sqrt(cars["price_usd"]))
 print_skew_kurt(np.sqrt(cars["price_usd"]))
 
-cars[cars["year_produced"] >= 1996]["color"].count()
-
 def calc_IQR(col):
     return col.quantile(0.75) - col.quantile(0.25)
 
