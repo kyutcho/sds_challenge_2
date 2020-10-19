@@ -13,6 +13,7 @@ import math
 from sklearn.preprocessing import LabelEncoder
 from scipy.special import boxcox1p
 from scipy.stats import norm, skew
+from sklearn.preprocessing import StandardScaler
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
@@ -79,9 +80,9 @@ def num_outlier(col):
 # categorical variable univariate analysis function
 def cat_analysis(col_x, col_y = "price_usd", sorted_by = "count"):
     col_count = cars[col_x].value_counts()
-    col_desc = cars.groupby(col_x)[col_y].agg(["mean", "median", "std", num_outlier])
+    col_desc = cars.groupby(col_x)[col_y].agg(["mean", "median", "std", calc_IQR])
     
-    print(col_desc)
+    # print(col_desc)
     
     if sorted_by == "count":
         idx = col_count.index
@@ -239,10 +240,10 @@ for col in cars.columns.to_list():
 # Drop model names column
 cars.drop("model_name", axis = 1, inplace = True)
 
-cars_no_trans = cars.copy()
+cars_model = cars.copy()
 
 # Make dummy variable
-cars_no_trans = pd.get_dummies(cars, drop_first = True)
+cars_model = pd.get_dummies(cars_model, drop_first = True)
 
 # Make X, y
 X = cars_no_trans.drop("price_usd", axis = 1)
@@ -250,17 +251,27 @@ y = cars_no_trans["price_usd"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 1)
 
+# Scaling with Stardard Scaler
+std_scaler = StandardScaler()
+std_scaler.fit(X_train)
+X_train_scaled = std_scaler.transform(X_train)
+X_test_scaled = std_scaler.transform(X_test)
+
 # Linear Regression
 linearM = LinearRegression()
+linearScaledM = LinearRegression()
 
 # Fit linear regression model
 linearM.fit(X_train, y_train)
+linearScaledM.fit(X_train_scaled, y_train)
 
 # Prediction for test
 linearM.score(X_test, y_test)
+linearScaledM.score(X_test_scaled, y_test)
 
 # Predicted price for price_usd using linear model
 y_pred = linearM.predict(X_test)
+y_pred_scaled = linearScaledM.predict(X_test)
 
 # MSE for linear model
 linear_mse = mean_squared_error(y_test, y_pred)
